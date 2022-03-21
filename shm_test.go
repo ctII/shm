@@ -51,15 +51,6 @@ func TestSharedMemory_ReadAt(t *testing.T) {
 		return
 	}
 
-	oldId := shm.id
-	shm.id = 1 << 60
-	err = shm.Close()
-	if err == nil {
-		t.Errorf("error not non-nil (%v)", err)
-		return
-	}
-	shm.id = oldId
-
 	err = shm.Close()
 	if err != nil {
 		t.Error(err)

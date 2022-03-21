@@ -140,6 +140,7 @@ func TestSharedMemory_Size(t *testing.T) {
 }
 
 func TestSharedMemory_Close(t *testing.T) {
+	t.Parallel()
 	shm := New(0, 256)
 	err := shm.Close()
 	if err == nil {

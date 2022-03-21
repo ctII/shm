@@ -20,12 +20,13 @@ func TestSharedMemory_ReadAt(t *testing.T) {
 	}
 
 	defer func() {
-		if err != nil {
-			err2 := shm.Close()
-			if err2 != nil {
-				err = multierror.Append(err, err2)
-				t.Error(err)
-			}
+		if err == nil {
+			return
+		}
+		err2 := shm.Close()
+		if err2 != nil {
+			err = multierror.Append(err, err2)
+			t.Error(err)
 		}
 	}()
 

@@ -1,0 +1,28 @@
+---
+kind: pipeline
+type: docker
+name: build
+
+trigger:
+  event:
+    - push
+    - tag
+    - pull_request
+
+steps:
+  - name: fmt and tidy
+    image: golang:1.18
+    commands:
+      - test -z $(go fmt ./...)
+      - go mod tidy
+      - git diff --exit-code -- go.mod go.sum
+      - git diff --exit-code -- go.mod go.sum > test -z
+  - name: build and vet
+    image: golang:1.18
+    commands:
+      - go build .
+      - go vet -race -v ./...
+  - name: test
+    image: golang:1.18
+    commands:
+      - go test -race -v ./...

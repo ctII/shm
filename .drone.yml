@@ -26,3 +26,8 @@ steps:
     image: golang:1.18
     commands:
       - go test -race -v ./...
+---
+kind: signature
+hmac: df69a0751b4209bc947866e2fe6fbb8134deeae5810fac06fbfc1dbef87c3508
+
+...

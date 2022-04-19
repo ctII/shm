@@ -1,6 +1,7 @@
 package shm
 
 import (
+	"bytes"
 	"errors"
 	"github.com/hashicorp/go-multierror"
 	"io"
@@ -8,6 +9,54 @@ import (
 	"syscall"
 	"testing"
 )
+
+func FillSlice(p []byte, b byte) {
+	for i := range p {
+		p[i] = b
+	}
+}
+
+func TestFillSlice(t *testing.T) {
+	t.Parallel()
+	p := make([]byte, 64)
+	FillSlice(p, 1)
+	for _, b := range p {
+		if b != 1 {
+			t.Fatal("b not 1")
+		}
+	}
+}
+
+func CompareSlices(p []byte, q []byte) bool {
+	if len(p) != len(q) {
+		return false
+	}
+	for i, b := range p {
+		if b != q[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestCompareSlices(t *testing.T) {
+	t.Parallel()
+
+	p := make([]byte, 64)
+	FillSlice(p, 1)
+
+	q := make([]byte, 64)
+	FillSlice(q, 0)
+
+	if CompareSlices(p, q) {
+		t.Fatal("p and q are equal")
+	}
+
+	FillSlice(q, 1)
+	if !CompareSlices(p, q) {
+		t.Fatal("p and q are not equal")
+	}
+}
 
 func TestSharedMemory_ReadAt(t *testing.T) {
 	t.Parallel()
@@ -198,5 +247,79 @@ func TestSharedMemory_WriteAt(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 		return
+	}
+}
+
+func TestSharedMemory_Read(t *testing.T) {
+	t.Parallel()
+	const size = 512
+	shm := New(0, size)
+	err := shm.Open()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	defer func() {
+		err = shm.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+
+	FillSlice(shm.b, 1)
+
+	b, err := io.ReadAll(&shm)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if !CompareSlices(b, shm.b) {
+		t.Error("b is not equal to shm.b in content")
+		return
+	}
+
+	b = make([]byte, size+1)
+	if _, err = shm.Read(b); err != ErrorGivenSliceBiggerThanData {
+		t.Errorf("shm.Read(b) did not return (%v)", ErrorGivenSliceBiggerThanData)
+		return
+	}
+}
+
+func TestSharedMemory_Write(t *testing.T) {
+	t.Parallel()
+	const size = 512
+	shm := New(0, size)
+	err := shm.Open()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	defer func() {
+		err = shm.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+
+	p := make([]byte, size)
+	FillSlice(p, 1)
+
+	written, err := io.Copy(&shm, bytes.NewReader(p))
+	if err != nil || written != int64(len(p)) {
+		t.Errorf("err (%v) written (%v)\n", err, written)
+		return
+	}
+
+	if !CompareSlices(p, shm.b) {
+		t.Error("p and shm.b are not equal in content")
+		return
+	}
+
+	p = make([]byte, size+1)
+	if _, err = shm.Write(p); err != ErrorGivenSliceBiggerThanData {
+		t.Errorf("shm.Write(p) did not return (%v)", ErrorGivenSliceBiggerThanData)
 	}
 }

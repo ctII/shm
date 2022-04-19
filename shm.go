@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sys/unix"
+	"io"
 )
 
 //SharedMemory is a Wrapper around SysVShm, and is not safe for concurrent access
@@ -28,12 +29,30 @@ func (sm *SharedMemory) ReadAt(p []byte, off int64) (n int, err error) {
 	return len(p), nil
 }
 
+var ErrorGivenSliceBiggerThanData = fmt.Errorf("shm: p is larger than SharedMemory size")
+
+func (sm *SharedMemory) Read(p []byte) (n int, err error) {
+	n = copy(p, sm.b)
+	if n < len(p) {
+		return n, ErrorGivenSliceBiggerThanData
+	}
+	return n, io.EOF
+}
+
 func (sm *SharedMemory) WriteAt(p []byte, off int64) (n int, err error) {
 	if int64(len(p))+off > int64(sm.size) {
 		return 0, ErrorGivenSliceTooBig
 	}
 	copy(sm.b[off:len(p)+int(off)], p)
 	return len(p), nil
+}
+
+func (sm *SharedMemory) Write(p []byte) (n int, err error) {
+	n = copy(sm.b, p)
+	if n < len(p) {
+		err = ErrorGivenSliceBiggerThanData
+	}
+	return n, err
 }
 
 //Open the SharedMemory (shm) segment, will return nil if called while already open

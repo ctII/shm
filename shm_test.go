@@ -84,18 +84,18 @@ func TestSharedMemory_ReadAt(t *testing.T) {
 	}
 
 	sr := io.NewSectionReader(&shm, 0, size)
-	bytes, err := io.ReadAll(sr)
+	b, err := io.ReadAll(sr)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if !reflect.DeepEqual(shm.b, bytes) {
+	if !reflect.DeepEqual(shm.b, b) {
 		t.Error("not DeepEqual")
 		return
 	}
 
-	_, err = shm.ReadAt(bytes, size)
+	_, err = shm.ReadAt(b, size)
 	if err != ErrorGivenSliceTooBig {
 		t.Errorf("error not ErrorGivenSliceTooBig is (%v)\n", err)
 		return

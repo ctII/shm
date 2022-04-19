@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/hashicorp/go-multierror"
 	"io"
-	"reflect"
 	"syscall"
 	"testing"
 )
@@ -79,9 +78,7 @@ func TestSharedMemory_ReadAt(t *testing.T) {
 		}
 	}()
 
-	for i := 0; i < size; i++ {
-		shm.b[i] = 1
-	}
+	FillSlice(shm.b, 1)
 
 	sr := io.NewSectionReader(&shm, 0, size)
 	b, err := io.ReadAll(sr)
@@ -90,8 +87,8 @@ func TestSharedMemory_ReadAt(t *testing.T) {
 		return
 	}
 
-	if !reflect.DeepEqual(shm.b, b) {
-		t.Error("not DeepEqual")
+	if !CompareSlices(shm.b, b) {
+		t.Error("shm.b and b are not equal in content or length")
 		return
 	}
 
@@ -222,9 +219,7 @@ func TestSharedMemory_WriteAt(t *testing.T) {
 
 	bCopy := make([]byte, size)
 
-	for i := 0; i < size; i++ {
-		shm.b[i] = 1
-	}
+	FillSlice(shm.b, 1)
 
 	_, err = shm.WriteAt(bCopy, 0)
 	if err != nil {
@@ -232,8 +227,8 @@ func TestSharedMemory_WriteAt(t *testing.T) {
 		return
 	}
 
-	if !reflect.DeepEqual(shm.b, bCopy) {
-		t.Error("shm: reflect.DeepEqual returned false for shm.b and bCopy")
+	if !CompareSlices(shm.b, bCopy) {
+		t.Error("shm.b and bCopy are not equal in content and/or size")
 		return
 	}
 
@@ -276,13 +271,13 @@ func TestSharedMemory_Read(t *testing.T) {
 	}
 
 	if !CompareSlices(b, shm.b) {
-		t.Error("b is not equal to shm.b in content")
+		t.Error("b is not equal to shm.b in content and/or length")
 		return
 	}
 
 	b = make([]byte, size+1)
 	if _, err = shm.Read(b); err != ErrorGivenSliceBiggerThanData {
-		t.Errorf("shm.Read(b) did not return (%v)", ErrorGivenSliceBiggerThanData)
+		t.Errorf("shm.Read(b) did not return ErrorGivenSliceBiggerThanData")
 		return
 	}
 }
@@ -314,12 +309,12 @@ func TestSharedMemory_Write(t *testing.T) {
 	}
 
 	if !CompareSlices(p, shm.b) {
-		t.Error("p and shm.b are not equal in content")
+		t.Error("p and shm.b are not equal in content and/or length")
 		return
 	}
 
 	p = make([]byte, size+1)
 	if _, err = shm.Write(p); err != ErrorGivenSliceBiggerThanData {
-		t.Errorf("shm.Write(p) did not return (%v)", ErrorGivenSliceBiggerThanData)
+		t.Errorf("shm.Write(p) did not return ErrorGivenSliceBiggerThanData")
 	}
 }

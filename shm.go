@@ -14,8 +14,8 @@ type SharedMemory struct {
 }
 
 //New SharedMemory using id, if id is 0, make one there
-func New(id int, size int) *SharedMemory {
-	return &SharedMemory{id: id, size: size}
+func New(id int, size int) SharedMemory {
+	return SharedMemory{id: id, size: size}
 }
 
 var ErrorGivenSliceTooBig = fmt.Errorf("shm: slice of bytes provided too big to write")

@@ -34,7 +34,7 @@ func TestSharedMemory_ReadAt(t *testing.T) {
 		shm.b[i] = 1
 	}
 
-	sr := io.NewSectionReader(shm, 0, size)
+	sr := io.NewSectionReader(&shm, 0, size)
 	bytes, err := io.ReadAll(sr)
 	if err != nil {
 		t.Error(err)

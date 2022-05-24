@@ -22,12 +22,30 @@ steps:
     commands:
       - go build .
       - go vet -race -v ./...
+---
+kind: pipeline
+type: docker
+name: test
+
+trigger:
+  event:
+    - push
+    - tag
+
+depends_on:
+  - build
+
+steps:
   - name: test
     image: golang:1.18
+    environment:
+      CODECOV_TOKEN:
+        from_secret: codecov_token
     commands:
-      - go test -race -v ./...
+      - go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+      - bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
 ---
 kind: signature
-hmac: df69a0751b4209bc947866e2fe6fbb8134deeae5810fac06fbfc1dbef87c3508
+hmac: b961239a8f1168dd93c6b852acd42ba51e718dd1cae4ac003f0384ad5a177f30
 
 ...

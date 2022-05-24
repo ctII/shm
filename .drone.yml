@@ -43,9 +43,16 @@ steps:
         from_secret: codecov_token
     commands:
       - go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
-      - bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
+      - curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+      - curl -Os https://uploader.codecov.io/latest/linux/codecov
+      - curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
+      - curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig
+      - gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+      - shasum -a 256 -c codecov.SHA256SUM
+      - chmod +x codecov
+      - ./codecov -t $CODECOV_TOKEN
 ---
 kind: signature
-hmac: b961239a8f1168dd93c6b852acd42ba51e718dd1cae4ac003f0384ad5a177f30
+hmac: 2347b5c533396e17c8ab5a62a6c24651ad939c0b4bf10ec4d71e89b76823f2a6
 
 ...

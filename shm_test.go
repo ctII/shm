@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/ctii/shm/internal/multierror"
+	"github.com/ctII/shm/internal/multierror"
 )
 
 func FillSlice(p []byte, b byte) {

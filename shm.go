@@ -2,9 +2,10 @@ package shm
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-multierror"
-	"golang.org/x/sys/unix"
 	"io"
+
+	"github.com/ctII/shm/internal/multierror"
+	"golang.org/x/sys/unix"
 )
 
 //SharedMemory is a Wrapper around SysVShm, and is not safe for concurrent access

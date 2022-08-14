@@ -3,10 +3,11 @@ package shm
 import (
 	"bytes"
 	"errors"
-	"github.com/hashicorp/go-multierror"
 	"io"
 	"syscall"
 	"testing"
+
+	"github.com/ctii/shm/internal/multierror"
 )
 
 func FillSlice(p []byte, b byte) {

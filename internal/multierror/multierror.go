@@ -36,10 +36,7 @@ func (me MultiError) Is(target error) bool {
 // Append newErr to oldErr error returning combined error, appending newErr to old if old is a MultiError or creating a new MultiError if not. does not append nil errors, see source
 func Append(oldErr error, newErr error) error {
 	if oldErr == nil {
-		if newErr == nil {
-			return nil
-		}
-		return oldErr
+		return newErr
 	}
 	if newErr == nil {
 		return oldErr
